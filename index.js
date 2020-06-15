@@ -29,7 +29,6 @@ function result_to_html(result) {
   <html>
     <head>
       <meta charset="UTF-8" />
-      <meta property="og:site_name" content="YouTube">
       <meta property="og:url" content="${result['url']}">
       <meta property="og:title" content="${result['title']}">
       <meta property="og:description" content="${result['description']}">
