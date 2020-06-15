@@ -44,7 +44,7 @@ module.exports = async (req, res) => {
   if (!url) return send(res, 401, { message: 'Please supply an URL to be scraped in the url query parameter.' })
 
   const cachedResult = cache.get(url)
-  if (cachedResult) {
+  if (cachedResult && cachedResult['image']) {
     return send(res, 200, result_to_html(cachedResult));
   }
 
