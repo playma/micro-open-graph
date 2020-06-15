@@ -24,6 +24,20 @@ const metascraper = require('metascraper').load([
 
 const TWENTY_FOUR_HOURS = 86400000
 
+function result_to_html(result) {
+  return `<!DOCTYPE html>  
+  <html>
+    <head>
+      <meta charset="UTF-8" />
+      <meta property="og:site_name" content="YouTube">
+      <meta property="og:url" content="${result['url']}">
+      <meta property="og:title" content="${result['title']}">
+      <meta property="og:description" content="${result['description']}">
+      <meta property="og:image" content="${result['image']}">
+    </head>
+  </html>`
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
 
@@ -31,7 +45,9 @@ module.exports = async (req, res) => {
   if (!url) return send(res, 401, { message: 'Please supply an URL to be scraped in the url query parameter.' })
 
   const cachedResult = cache.get(url)
-  if (cachedResult) return send(res, 200, cachedResult)
+  if (cachedResult) {
+    return send(res, 200, result_to_html(cachedResult));
+  }
 
   let statusCode, data
   try {
@@ -44,7 +60,7 @@ module.exports = async (req, res) => {
     data = { message: `Scraping the open graph data from "${url}" failed.`, suggestion: 'Make sure your URL is correct and the webpage has open graph data, meta tags or twitter card data.' }
   }
 
-  send(res, statusCode, data)
+  send(res, statusCode, result_to_html(data))
   // Cache results for 24 hours
   cache.put(url, data, TWENTY_FOUR_HOURS)
 }
