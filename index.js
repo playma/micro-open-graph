@@ -41,9 +41,10 @@ module.exports = async (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=UTF-8')
   res.setHeader('Access-Control-Allow-Origin', '*')
 
-  const { query: { url } } = parse(req.url, true)
+  let { query: { url } } = parse(req.url, true)
   if (!url) return send(res, 401, { message: 'Please supply an URL to be scraped in the url query parameter.' })
 
+  url = encodeURI(url);
   const cachedResult = cache.get(url)
   if (cachedResult && cachedResult['image']) {
     return send(res, 200, result_to_html(cachedResult));
