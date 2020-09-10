@@ -24,30 +24,41 @@ const metascraper = require('metascraper').load([
 
 const TWENTY_FOUR_HOURS = 86400000
 
-function result_to_html(result) {
-  return `<!DOCTYPE html>  
-  <html>
-    <head>
-      <meta charset="UTF-8" />
-      <meta property="og:url" content="${result['url']}">
-      <meta property="og:title" content="${result['title']}">
-      <meta property="og:description" content="${result['description']}">
-      <meta property="og:image" content="${result['image']}">
-    </head>
-  </html>`
+function format_result(result, format) {
+  switch (format) {
+    case 'json':
+      return JSON.stringify({
+        'url': result['url'],
+        'title': result['title'],
+        'description': result['description'],
+        'image': result['image']
+      });
+    case 'html':
+    default:
+      return `<!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8" />
+            <meta property="og:url" content="${result['url']}">
+            <meta property="og:title" content="${result['title']}">
+            <meta property="og:description" content="${result['description']}">
+            <meta property="og:image" content="${result['image']}">
+          </head>
+        </html>`
+  }
 }
 
 module.exports = async (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=UTF-8')
   res.setHeader('Access-Control-Allow-Origin', '*')
 
-  let { query: { url } } = parse(req.url, true)
+  let { query: { url, format } } = parse(req.url, true)
   if (!url) return send(res, 401, { message: 'Please supply an URL to be scraped in the url query parameter.' })
 
   url = encodeURI(url);
   const cachedResult = cache.get(url)
   if (cachedResult && cachedResult['image']) {
-    return send(res, 200, result_to_html(cachedResult));
+    return send(res, 200, format_result(cachedResult, format));
   }
 
   let statusCode, data
@@ -61,7 +72,7 @@ module.exports = async (req, res) => {
     data = { message: `Scraping the open graph data from "${url}" failed.`, suggestion: 'Make sure your URL is correct and the webpage has open graph data, meta tags or twitter card data.' }
   }
 
-  send(res, statusCode, result_to_html(data))
+  send(res, statusCode, format_result(data, format))
   // Cache results for 24 hours
   cache.put(url, data, TWENTY_FOUR_HOURS)
 }
