@@ -51,6 +51,7 @@ function format_result(result, format) {
 module.exports = async (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=UTF-8')
   res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Headers', 'Authorization')
 
   let { query: { url, format } } = parse(req.url, true)
   if (!url) return send(res, 401, { message: 'Please supply an URL to be scraped in the url query parameter.' })
